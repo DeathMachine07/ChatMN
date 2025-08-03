@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ChatMN Siêu Vui Vẻ</title>
+     <style>
+        body {
+            background-color: #000000;
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chat-container {
+            width: 95vw;
+            max-width: 1400px;
+            height: 95vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #424242;
+            border-radius: 12px;
+            overflow: hidden;
+            /* YÊU CẦU 1: NỀN ĐEN */
+            background-color: #000000;
+        }
+
+        #chat-history {
+            flex-grow: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #chat-placeholder {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #555;
+            font-size: 3rem;
+            font-weight: bold;
+            user-select: none;
+        }
+
+        .message {
+            max-width: 80%;
+            padding: 12px 18px;
+            border-radius: 18px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-message {
+            background-color: #3f51b5;
+            align-self: flex-end;
+            color: white;
+        }
+        
+        /* YÊU CẦU 2: RESPONSE CỦA AI KHÔNG CÓ KHUNG, TRÀN RA VÀ CĂN ĐỀU */
+        .ai-message {
+            background-color: transparent; /* Bỏ khung nền */
+            align-self: flex-start;
+            padding: 5px 0; /* Bỏ padding ngang */
+            border-radius: 0; /* Bỏ bo góc */
+            max-width: 99%; /* Tràn ra gần hết chiều rộng */
+            text-align: left; /* Căn đều hai bên */
+        }
+        
+        .system-notification {
+            font-style: italic;
+            color: #ffc107;
+            background-color: rgba(255, 193, 7, 0.1);
+            align-self: center;
+            max-width: 90%;
+            text-align: center;
+            font-size: 14px;
+        }
+        
+        #image-preview-container {
+            padding: 10px 20px;
+            background-color: #1a1a1a; /* Hơi khác biệt với nền đen */
+            position: relative;
+            display: none;
+        }
+        #image-preview {
+            max-height: 100px;
+            border-radius: 8px;
+        }
+        #remove-image-button {
+            position: absolute;
+            top: 0px;
+            right: 10px;
+            background: rgba(0,0,0,0.5);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        #input-area {
+            display: flex;
+            padding: 10px;
+            border-top: 1px solid #424242;
+            align-items: center;
+        }
+
+        #attach-file-button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 0 10px;
+        }
+
+        #user-input {
+            flex-grow: 1;
+            background-color: #424242;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            resize: none;
+            font-size: 16px;
+        }
+
+        #send-button {
+            background-color: #f2f2f2;
+            color: black;
+            border: none;
+            padding: 20px 20px;
+            margin-left: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+
+        #send-button:hover {
+            background-color: #303f9f;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="chat-container">
+        <div id="chat-history">
+            <div id="chat-placeholder">ChatMN :)</div>
+        </div>
+
+        <div id="image-preview-container">
+            <img id="image-preview" src="" alt="Image preview"/>
+            <button id="remove-image-button">×</button>
+        </div>
+
+        <div id="input-area">
+            <button id="attach-file-button" title="Đính kèm ảnh">📎</button>
+            <input type="file" id="image-input" style="display: none;">
+            <textarea id="user-input" placeholder="Hỏi ChatMN bất cứ điều gì..."></textarea>
+            <button id="send-button">Gửi</button>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Các biến DOM cũ
+            function typeText(element, text, speed, callback) {
+    let index = 0;
+    function type() {
+        if (index <= text.length) {
+            element.innerHTML = text.substring(0, index).replace(/\n/g, '<br>');
+            index++;
+            setTimeout(type, speed);
+        } else if (callback) {
+            callback();
+        }
+    }
+    type();
+}
+            const chatHistory = document.getElementById('chat-history');
+            const userInput = document.getElementById('user-input');
+            const sendButton = document.getElementById('send-button');
+            const chatPlaceholder = document.getElementById('chat-placeholder');
+
+            // Các biến DOM cho tính năng gửi ảnh
+            const attachFileButton = document.getElementById('attach-file-button');
+            const imageInput = document.getElementById('image-input');
+            const imagePreviewContainer = document.getElementById('image-preview-container');
+            const imagePreview = document.getElementById('image-preview');
+            const removeImageButton = document.getElementById('remove-image-button');
+
+            let selectedImageData = null;
+
+            const API_KEY = 'AIzaSyDm5t_0OiuEIXEuCBQ5UORlUE1O1l21N_g'; // Nhớ thay API Key của bạn vào đây
+            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+            
+            const systemInstruction = {
+                role: "model",
+                parts: [{
+                    text: "Bạn là một trợ lý AI tên là ChatMN, cực kỳ vui tính, thân thiện và một chút nhí nhảnh. Hãy luôn trả lời bằng giọng văn của giới trẻ Việt Nam, sử dụng emoji và icon (như :>, ^^) một cách tự nhiên. Giữ câu trả lời dễ thương và đôi khi pha trò nhé! QUAN TRỌNG: LUÔN LUÔN trả lời bằng Tiếng Việt, không dùng ngôn ngữ nào khác."
+                }]
+            };
+            let conversationHistory = [systemInstruction];
+
+            attachFileButton.addEventListener('click', () => {
+                imageInput.click();
+            });
+
+            removeImageButton.addEventListener('click', () => {
+                clearImageSelection();
+            });
+
+            imageInput.addEventListener('change', (event) => {
+                const file = event.target.files[0];
+                if (file && file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        const base64Data = reader.result.split(',')[1];
+                        selectedImageData = {
+                            mimeType: file.type,
+                            data: base64Data
+                        };
+                        imagePreview.src = reader.result;
+                        imagePreviewContainer.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            function clearImageSelection() {
+                imageInput.value = '';
+                selectedImageData = null;
+                imagePreviewContainer.style.display = 'none';
+                imagePreview.src = '';
+            }
+
+            sendButton.addEventListener('click', sendMessage);
+            userInput.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' && !event.shiftKey) {
+                    event.preventDefault();
+                    sendMessage();
+                }
+            });
+
+            function sendMessage() {
+                const messageText = userInput.value.trim();
+                if (messageText === '' && !selectedImageData) return;
+                
+                if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
+                   alert('Bạn ơi, thay "YOUR_API_KEY" bằng API Key của bạn trong file code đi nè :>');
+                   return;
+                }
+
+                if (chatPlaceholder) {
+                    chatPlaceholder.style.display = 'none';
+                }
+
+                const userParts = [];
+                if (selectedImageData) {
+                    userParts.push({
+                        inline_data: {
+                            mime_type: selectedImageData.mimeType,
+                            data: selectedImageData.data
+                        }
+                    });
+                    
+                    const imgElement = document.createElement('img');
+                    imgElement.src = `data:${selectedImageData.mimeType};base64,${selectedImageData.data}`;
+                    imgElement.style.maxHeight = '200px';
+                    imgElement.style.borderRadius = '15px';
+                    imgElement.style.marginBottom = '10px';
+                    
+                    const messageContainer = document.createElement('div');
+                    messageContainer.classList.add('message', 'user-message');
+                    messageContainer.appendChild(imgElement);
+
+                    if (messageText) {
+                         const textElement = document.createElement('div');
+                         textElement.textContent = messageText;
+                         messageContainer.appendChild(textElement);
+                    }
+                    chatHistory.appendChild(messageContainer);
+                    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+                } else {
+                    appendMessage(messageText, 'user-message');
+                }
+
+                if(messageText){
+                    userParts.push({ text: messageText });
+                }
+
+                conversationHistory.push({ role: "user", parts: userParts });
+                
+                userInput.value = '';
+                clearImageSelection();
+
+                const waitingMessage = appendMessage('ChatMN đang nghĩ...', 'ai-message');
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ contents: conversationHistory })
+                })
+                .then(response => {
+                    if (!response.ok) { throw new Error(`Lỗi mạng rùi: ${response.status}`); }
+                    return response.json();
+                })
+                .then(data => {
+                    chatHistory.removeChild(waitingMessage);
+                    
+                    if (data.candidates && data.candidates.length > 0) {
+                        const candidate = data.candidates[0];
+                        let aiResponse = "Hmm... mình không biết nói gì về cái này :P";
+                        if (candidate.content && candidate.content.parts) {
+                            aiResponse = candidate.content.parts[0].text;
+                        }
+
+                        if (candidate.finishReason === "MAX_TOKENS") {
+                            aiResponse += "\n\n*(Ui, mình nói hơi dài nên bị ngắt quãng... :<)*";
+                        } else if (candidate.finishReason === "SAFETY") {
+                            aiResponse = "Ối, cái này hơi nhạy cảm nên mình không nói được. Bạn hỏi câu khác được không? ^^";
+                        }
+                        
+                        appendMessage(aiResponse, 'ai-message');
+                        conversationHistory.push({ role: "model", parts: [{ text: aiResponse }] });
+                    } else {
+                         appendMessage('Huhu, hình như có lỗi gì đó từ phía API rùi á. :(', 'ai-message system-notification');
+                    }
+                })
+                .catch(error => {
+                    console.error('Lỗi:', error);
+                    chatHistory.removeChild(waitingMessage);
+                    appendMessage(`Gặp lỗi rùi nè: ${error.message}. Bạn check lại F12 xem sao nha!`, 'ai-message system-notification');
+                });
+            }
+            
+            function appendMessage(text, className) {
+    const messageElement = document.createElement('div');
+    messageElement.classList.add('message', className);
+    chatHistory.appendChild(messageElement);
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+
+    if (className.includes('ai-message')) {
+        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>'); 
+        const speedPerChar = 1000 / 100; // 15 chữ/giây → 66.66ms/char
+        typeText(messageElement, formattedText, speedPerChar);
+    } else {
+        messageElement.innerHTML = text.replace(/\n/g, '<br>');
+    }
+
+    return messageElement;
+}
+        });
+    </script>
+</body>
+</html>
+
