@@ -1485,7 +1485,7 @@ Privacy & Safety: CHASE_X không ghi personal real-world sensitive data; nếu P
 
     if (className.includes('ai-message')) {
         let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>'); 
-        const speedPerChar = 1000 / 100; // 15 chữ/giây → 66.66ms/char
+        const speedPerChar = 1000 / 700; // 15 chữ/giây → 66.66ms/char
         typeText(messageElement, formattedText, speedPerChar);
     } else {
         messageElement.innerHTML = text.replace(/\n/g, '<br>');
