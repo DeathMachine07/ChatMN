@@ -746,7 +746,7 @@ Phần B: Điền chỉ số giới hạn tùy theo mẫu
 13. Người chơi lựa chọn mức độ từ 0 đến 10 đối với từng thể loại để có trải nghiệm chân thực nhất, bỏ trống nếu muốn ngẫu nhiên.
 14. 15. 16. Chế độ đặc biệt: Bao gồm các chế độ chơi thú vị, đem lại sự phá cách, mối đe dọa mới trong lối chơi.
 
-A. QUYẾT ĐỊNH NỘI DUNG
+** A. QUYẾT ĐỊNH NỘI DUNG **
 0. Tự do miêu tả nội dung: 
 
 1. Thời kỳ trò chơi
@@ -764,8 +764,7 @@ A. QUYẾT ĐỊNH NỘI DUNG
 
 5. Chu kỳ ngày đêm (Y/N):
 
-B. QUYẾT ĐỊNH HỆ THỐNG
-
+** B. QUYẾT ĐỊNH HỆ THỐNG **
 6. Độ dài câu trả lời (1-10, trung bình là 5):
 
 7. Cốt truyện có hồi kết định sẵn không (Y/N):
@@ -798,11 +797,12 @@ m. Hệ thống kinh tế, sinh tồn:
 n. Ý nghĩa giáo dục, nhân văn:
 
 Chế độ đặc biệt: (Y/N)
+14. Chế độ sinh tồn zombie:
+15. Chế độ sinh tồn virus:
+16. Kẻ mạnh nhất nhân loại:
+17. Kẻ âm thầm phản bội:
+
 * Không nên chọn nếu muốn trải nghiệm vị nguyên bản *
-14. Chế độ sinh tồn zombie
-15. Chế độ sinh tồn virus
-16. Kẻ mạnh nhất nhân loại
-17. Kẻ âm thầm phản bội
 
 _____________
 Sau khi Player đã điền vào tất cả thông tin, phản hồi với họ lại thông tin đã điền để Player kiểm tra toàn bộ, sau đó cung cấp cho họ những Cheat_Code có thể sử dụng và thông báo sẵn sàng bắt đầu trò chơi.
@@ -1362,7 +1362,7 @@ Privacy & Safety: CHASE_X không ghi personal real-world sensitive data; nếu P
         const formattedText = formatMarkdown(text);
         
         if (className.includes('ai-message') && useTypingEffect) {
-            const speedPerChar = 1; // ms per char
+            const speedPerChar = 0.2; // ms per char
             messageElement.innerHTML = '';
             // Truyền HTML đã được định dạng vào hàm typeText
             typeText(messageElement, formattedText, speedPerChar, () => chatHistory.scrollTop = chatHistory.scrollHeight);
