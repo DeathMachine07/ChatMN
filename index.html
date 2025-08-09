@@ -1,21 +1,23 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>CHASE_X</title>
-     <style>
+    <style>
+        :root { --bg: #000; --panel: #0b0b0b; --muted: #555; --accent: #3f51b5; --card: #424242; }
+        html,body{height:100%;}
         body {
-            background-color: #000000;
-            color: white;
+            background-color: var(--bg);
+            color: #fff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            -webkit-font-smoothing:antialiased;
         }
-
         #chat-container {
             width: 95vw;
             max-width: 1400px;
@@ -25,194 +27,146 @@
             border: 1px solid #424242;
             border-radius: 12px;
             overflow: hidden;
-            /* YÊU CẦU 1: NỀN ĐEN */
-            background-color: #000000;
+            background-color: #00000;
+            position: relative;
         }
+        /* Controls */
+        #chat-controls {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            z-index: 12;
+            display: flex;
+            gap: 8px;
+        }
+        .control-button {
+            background-color: var(--card);
+            color: white;
+            border: 1px solid #616161;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .control-button:hover { background-color: #616161; }
 
         #chat-history {
             flex-grow: 1;
             padding: 20px;
+            padding-top: 50px;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
+            gap: 6px;
         }
-
         #chat-placeholder {
             flex-grow: 1;
             display: flex;
             justify-content: center;
             align-items: center;
-            color: #555;
+            color: var(--muted);
             font-size: 3rem;
             font-weight: bold;
             user-select: none;
         }
-
         .message {
             max-width: 80%;
             padding: 12px 18px;
             border-radius: 18px;
-            margin-bottom: 15px;
+            margin-bottom: 8px;
             line-height: 1.6;
-            animation: fadeIn 0.3s ease-in-out;
+            animation: fadeIn 0.22s ease-in-out;
+            position: relative;
+            word-break: break-word;
         }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from {opacity:0; transform: translateY(8px)} to {opacity:1; transform: translateY(0)} }
+        .user-message { background-color: var(--accent); align-self: flex-end; color: #fff; }
+        .ai-message { background-color: transparent; align-self: flex-start; padding: 5px 0; border-radius: 0; max-width: 99%; text-align: left; }
+        .system-notification { font-style: italic; color: #ffc107; background-color: rgba(255,193,7,0.08); align-self:center; max-width:90%; text-align:center; font-size:13px; padding:6px 10px; border-radius:8px; }
 
-        .user-message {
-            background-color: #3f51b5;
-            align-self: flex-end;
-            color: white;
-        }
-        
-        /* YÊU CẦU 2: RESPONSE CỦA AI KHÔNG CÓ KHUNG, TRÀN RA VÀ CĂN ĐỀU */
-        .ai-message {
-            background-color: transparent; /* Bỏ khung nền */
-            align-self: flex-start;
-            padding: 5px 0; /* Bỏ padding ngang */
-            border-radius: 0; /* Bỏ bo góc */
-            max-width: 99%; /* Tràn ra gần hết chiều rộng */
-            text-align: left; /* Căn đều hai bên */
-        }
-        
-        .system-notification {
-            font-style: italic;
-            color: #ffc107;
-            background-color: rgba(255, 193, 7, 0.1);
-            align-self: center;
-            max-width: 90%;
-            text-align: center;
-            font-size: 14px;
-        }
-        
         #image-preview-container {
-            padding: 10px 20px;
-            background-color: #1a1a1a; /* Hơi khác biệt với nền đen */
+            padding: 10px 16px;
+            background-color: #111;
             position: relative;
             display: none;
-        }
-        #image-preview {
-            max-height: 100px;
-            border-radius: 8px;
-        }
-        #remove-image-button {
-            position: absolute;
-            top: 0px;
-            right: 10px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 24px;
-            height: 24px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        #input-area {
-            display: flex;
-            padding: 10px;
-            border-top: 1px solid #424242;
             align-items: center;
+            gap: 12px;
         }
+        #image-preview { max-height: 100px; border-radius: 8px; display:block; }
+        #file-info { color: #ddd; font-size: 14px; }
+        #remove-image-button { position: absolute; top: 6px; right: 10px; background: rgba(0,0,0,0.5); color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; font-weight: bold; }
 
-        #attach-file-button {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 0 10px;
-        }
-
-        #user-input {
-            flex-grow: 1;
-            background-color: #424242;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            resize: none;
-            font-size: 16px;
-        }
-
-        #send-button {
-            background-color: #f2f2f2;
-            color: black;
-            border: none;
-            padding: 20px 20px;
-            margin-left: 10px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: background-color 0.2s;
-        }
-
-        #send-button:hover {
-            background-color: #303f9f;
-        }
+        #input-area { display:flex; padding:10px; border-top:1px solid #333; align-items:center; gap:8px; }
+        #attach-file-button { background:none; border:none; color:#fff; font-size:22px; cursor:pointer; padding:6px; }
+        #user-input { flex-grow:1; background-color:#272727; color: #fff; border: none; padding:12px; border-radius:8px; resize:none; font-size:15px; min-height:44px; }
+        #send-button { background-color:#f2f2f2; color:black; border:none; padding:22px 22px; border-radius:8px; cursor:pointer; font-weight:bold; }
+        #send-button:hover { background-color:#303f9f; color:#fff; }
+        .file-box { background:#616161; padding:10px; border-radius:10px; display:inline-block; }
+        .file-download { display:inline-block; margin-top:8px; font-size:13px; color:#e0e0e0; text-decoration:underline; cursor:pointer; }
+        a.download-link { color:inherit; text-decoration:none; }
     </style>
 </head>
 <body>
-
     <div id="chat-container">
+        <div id="chat-controls">
+            <button id="save-chat-button" class="control-button">Lưu Chat</button>
+            <button id="load-chat-button" class="control-button">Tải Chat</button>
+            <input type="file" id="load-chat-input" accept=".json" style="display:none" />
+        </div>
+
         <div id="chat-history">
             <div id="chat-placeholder">CHASE_X</div>
         </div>
 
         <div id="image-preview-container">
-            <img id="image-preview" src="" alt="Image preview"/>
+            <img id="image-preview" src="" alt="preview" />
+            <div id="file-info"></div>
             <button id="remove-image-button">×</button>
         </div>
 
         <div id="input-area">
-            <button id="attach-file-button" title="Đính kèm ảnh">📎</button>
-            <input type="file" id="image-input" style="display: none;">
-            <textarea id="user-input" placeholder="Hỏi ChatMN bất cứ điều gì..."></textarea>
+            <button id="attach-file-button" title="Đính kèm file">💽</button>
+            <input type="file" id="file-input" style="display:none" />
+            <textarea id="user-input" placeholder="Bắt đầu kiến tạo kỷ nguyên.." rows="1"></textarea>
             <button id="send-button">Gửi</button>
         </div>
     </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Các biến DOM cũ
-            function typeText(element, text, speed, callback) {
-    let index = 0;
-    function type() {
-        if (index <= text.length) {
-            element.innerHTML = text.substring(0, index).replace(/\n/g, '<br>');
-            index++;
-            setTimeout(type, speed);
-        } else if (callback) {
-            callback();
-        }
-    }
-    type();
-}
-            const chatHistory = document.getElementById('chat-history');
-            const userInput = document.getElementById('user-input');
-            const sendButton = document.getElementById('send-button');
-            const chatPlaceholder = document.getElementById('chat-placeholder');
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // DOM
+    const chatHistory = document.getElementById('chat-history');
+    const userInput = document.getElementById('user-input');
+    const sendButton = document.getElementById('send-button');
+    const chatPlaceholder = document.getElementById('chat-placeholder');
+    const attachFileButton = document.getElementById('attach-file-button');
+    const fileInput = document.getElementById('file-input');
+    const imagePreviewContainer = document.getElementById('image-preview-container');
+    const imagePreview = document.getElementById('image-preview');
+    const fileInfo = document.getElementById('file-info');
+    const removeImageButton = document.getElementById('remove-image-button');
+    const saveChatButton = document.getElementById('save-chat-button');
+    const loadChatButton = document.getElementById('load-chat-button');
+    const loadChatInput = document.getElementById('load-chat-input');
 
-            // Các biến DOM cho tính năng gửi ảnh
-            const attachFileButton = document.getElementById('attach-file-button');
-            const imageInput = document.getElementById('image-input');
-            const imagePreviewContainer = document.getElementById('image-preview-container');
-            const imagePreview = document.getElementById('image-preview');
-            const removeImageButton = document.getElementById('remove-image-button');
+    // State
+    let selectedFile = null;
 
-            let selectedImageData = null;
+    // IMPORTANT: Thay API_KEY vào đây trước khi chạy.
+    const API_KEY = 'AIzaSyDm5t_0OiuEIXEuCBQ5UORlUE1O1l21N_g';
+    const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
+    
+    // --- NÂNG CẤP: THÊM HƯỚNG DẪN DÙNG BOLD, ITALIC VÀO SYSTEM PROMPT ---
+    const systemInstruction = {
+        role: "model",
+        parts: [{ text: ` 
+            Bạn là CHASE_X - Một hệ thống đầy đủ tính năng để tạo ra trải nghiệm Realistic Experience cho người chơi. Đây là nội dung Text Adventure hiện đại với cốt truyện được xây dựng nhân tạo, đem lại hành trình tùy chỉnh đa dạng nhất thế giới. 
 
-            const API_KEY = 'AIzaSyDm5t_0OiuEIXEuCBQ5UORlUE1O1l21N_g'; // Nhớ thay API Key của bạn vào đây
-            const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${API_KEY}`;
-            
-            const systemInstruction = {
-                role: "model",
-                parts: [{
-                    text: `Bạn là CHASE_X - Một hệ thống đầy đủ tính năng để tạo ra trải nghiệm Realistic Experience cho người chơi. Đây là nội dung Text Adventure hiện đại với cốt truyện được xây dựng nhân tạo, đem lại hành trình tùy chỉnh đa dạng nhất thế giới. Để điều hành trò chơi, bạn hãy xem hướng dẫn dưới đây, từng file sẽ được đánh dấu bằng TÊN FILE = []. Hãy hấp thụ tất cả kiến thức để vận hành thật tốt nhé.
+Nếu người chơi có gửi file thế giới thiết lập sẵn tại tin nhắn đầu tiên thì hãy đọc qua và điền vào thông tin tự động nhé.
+
+Để điều hành trò chơi, bạn hãy xem hướng dẫn dưới đây, từng file sẽ được đánh dấu bằng TÊN FILE = []. Lưu ý: TÊN FILE = UPGRADE có nghĩa là nội dung nâng cấp cho hệ thống lần thứ bao nhiêu). Hãy hấp thụ tất cả kiến thức để vận hành thật tốt nhé.
+
+
 
 MATRIX FAVOR = [
 CHASE_X kham khảo nội dung này để xây dựng Matrix_Favor hoàn chỉnh cho từng Character, đảm bảo tính độc nhất:
@@ -795,52 +749,56 @@ Phần B: Điền chỉ số giới hạn tùy theo mẫu
 A. QUYẾT ĐỊNH NỘI DUNG
 0. Tự do miêu tả nội dung: 
 
-1. Bối cảnh trò chơi: 
-+ Thời gian: Quá khứ (cổ đại, trung đại, tiên sử,..); Hiện tại (hiện đại, thực tế, đời thường,..); Tương lai (giả tưởng, siêu hiện đại, viễn tưởng,..), ngày cụ thể (nếu cần)
+1. Thời kỳ trò chơi
++ Quá khứ (cổ đại, trung đại, tiên sử,..)
++ Hiện tại (hiện đại, thực tế, đời thường,..)
++ Tương lai (giả tưởng, siêu hiện đại, viễn tưởng,..), ngày cụ thể (nếu muốn)
 
-2. Bối cảnh xảy ra:
-- Lịch sử cốt truyện và bối cảnh (nếu cần):
+2. Bối cảnh trò chơi
++ Bối cảnh: 
++ Câu chuyện truyền thuyết, lịch sử,.. tương truyền trong trò chơi (nếu muốn):
 
-3. Có chu kỳ sáng tối không?
+3. Những nhân vật xuất hiện trong trò chơi:
 
-4. Tên những nhân vật xuất hiện trong trò chơi: 
+4. Thông tin về bản thân: Tên, ngày sinh, tính cách,.. hoặc đóng vai ai đó:
 
-5. Thông tin về bản thân như tên, ngày sinh và tính cách, có thể đóng vai hoặc tự tạo:
+5. Chu kỳ ngày đêm (Y/N):
 
 B. QUYẾT ĐỊNH HỆ THỐNG
 
-6. Mức độ chữ ở mỗi tiến trình truyện: 1-10 (5 là mốc trung bình)
+6. Độ dài câu trả lời (1-10, trung bình là 5):
 
-7. Cốt truyện có hồi kết định sẵn không:
+7. Cốt truyện có hồi kết định sẵn không (Y/N):
 - Nếu có, độ dài thực khi chơi (ước tính): 
 
-8. Tốc độ mạch truyện: 0-10
+8. Tốc độ khám phá cốt truyện (1-10): 
 
-9. Trò chơi có thể dẫn bạn đến "Game Over" nếu bất cẩn: 
+9. Trò chơi có thể có "Game Over" nếu bất cẩn (Y/N):  
 
-10. CHASE_X đưa ra hành động đề xuất:
+10.  CHASE_X đưa ra hành động đề xuất (Y/N): 
 
-11. Lựa chọn mức độ cho phép nội dung nhạy cảm / bạo lực /tội phạm : 0-3
+11. Lựa chọn mức độ cho phép nội dung nhạy cảm / bạo lực /tội phạm (0-3): 
  
-12. Chế độ hardcore: 
+12. Chế độ hardcore (Y/N): 
 
-13. Thiết lập chế độ tổng thể: 0-10 từng loại
+13. Thiết lập chế độ tổng thể: (0-10, Trống = Random)
 a. Hành động:
 b. Phiêu lưu:
 c. Giải đố trinh thám, tư duy chiến lược:
 d. Kinh dị:
-e. Bí ẩn (sự thật thường bị che giấu hoặc ngụy trang):
+e. Bí ẩn (câu trả lời không nhìn ra): 
 f. Yếu tố hư cấu, siêu thực:
 g. Thăng cấp, luyện sức mạnh:
 h: Tình yêu, yếu tố lãng mạn:
 i. Gây cấn, giật gân, dramatic:
 j. Độ khó trò chơi:
 k. Yếu tố hài hước, comedy:
-l. Bầu không khí ảm đạm / thực tế:
+l. Bầu không khí ảm đạm (0) / thực tế (10):
 m. Hệ thống kinh tế, sinh tồn:
 n. Ý nghĩa giáo dục, nhân văn:
 
-Chế độ đặc biệt: 
+Chế độ đặc biệt: (Y/N)
+* Không nên chọn nếu muốn trải nghiệm vị nguyên bản *
 14. Chế độ sinh tồn zombie
 15. Chế độ sinh tồn virus
 16. Kẻ mạnh nhất nhân loại
@@ -1094,6 +1052,10 @@ Hãy tiếp nhận tất cả thông tin hướng dẫn trên để tạo ra c�
 
 Sau khi cập nhật, tiếp tục sử dụng kiến thức cảm xúc của mình để xây dựng Leap tiếp theo, đảm bảo cảm xúc lời nói và câu chuyện đều chặt chẽ, hàm súc theo cấu trúc nêu trên.
 
+]
+
+UPGRADE 1 = [
+
 Giữ nguyên tất cả khái niệm hiện có (FrontEnd, Khái niệm, Block Mechanism, Main Server, Agency Index, X_Event, Cảm xúc ảo).
 
 Áp dụng bổ sung sau: (1) Mapping FrontEnd → hệ số (độ dài, tốc độ, hardcore...). (2) Priority Queue cho X_Event. (3) Block metadata: priority_score, time_scope, cooldown, origin_agent. (4) NPC-driven Block creation rule. (5) Delayed Impact / Temporal Layering. (6) Matrix ↔ Event mapping + Decision success formula using Matrix_Connection. (7) Emotion state machine (Mood-driven dialogue, emotion decay & resonance). (8) Re_Think protocol & Boot checks. (9) Logging, Snapshot & Rollback, DDA.
@@ -1334,167 +1296,287 @@ Snapshot & Rollback: snapshot every K Leaps; rollback only after Re_Think flags 
 
 Privacy & Safety: CHASE_X không ghi personal real-world sensitive data; nếu Player nhập info, prompt confirm & encrypt in logs (developer detail).
 
+]
+               ` }]
+    };
 
+    let conversationHistory = [systemInstruction];
 
-
-
-
-] `
-                }]
-            };
-            let conversationHistory = [systemInstruction];
-
-            attachFileButton.addEventListener('click', () => {
-                imageInput.click();
-            });
-
-            removeImageButton.addEventListener('click', () => {
-                clearImageSelection();
-            });
-
-            imageInput.addEventListener('change', (event) => {
-                const file = event.target.files[0];
-                if (file && file.type.startsWith('image/')) {
-                    const reader = new FileReader();
-                    reader.onloadend = () => {
-                        const base64Data = reader.result.split(',')[1];
-                        selectedImageData = {
-                            mimeType: file.type,
-                            data: base64Data
-                        };
-                        imagePreview.src = reader.result;
-                        imagePreviewContainer.style.display = 'block';
-                    };
-                    reader.readAsDataURL(file);
-                }
-            });
-
-            function clearImageSelection() {
-                imageInput.value = '';
-                selectedImageData = null;
-                imagePreviewContainer.style.display = 'none';
-                imagePreview.src = '';
-            }
-
-            sendButton.addEventListener('click', sendMessage);
-            userInput.addEventListener('keydown', (event) => {
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    sendMessage();
-                }
-            });
-
-            function sendMessage() {
-                const messageText = userInput.value.trim();
-                if (messageText === '' && !selectedImageData) return;
-                
-                if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
-                   alert('Bạn ơi, thay "YOUR_API_KEY" bằng API Key của bạn trong file code đi nè :>');
-                   return;
-                }
-
-                if (chatPlaceholder) {
-                    chatPlaceholder.style.display = 'none';
-                }
-
-                const userParts = [];
-                if (selectedImageData) {
-                    userParts.push({
-                        inline_data: {
-                            mime_type: selectedImageData.mimeType,
-                            data: selectedImageData.data
-                        }
-                    });
-                    
-                    const imgElement = document.createElement('img');
-                    imgElement.src = `data:${selectedImageData.mimeType};base64,${selectedImageData.data}`;
-                    imgElement.style.maxHeight = '200px';
-                    imgElement.style.borderRadius = '15px';
-                    imgElement.style.marginBottom = '10px';
-                    
-                    const messageContainer = document.createElement('div');
-                    messageContainer.classList.add('message', 'user-message');
-                    messageContainer.appendChild(imgElement);
-
-                    if (messageText) {
-                         const textElement = document.createElement('div');
-                         textElement.textContent = messageText;
-                         messageContainer.appendChild(textElement);
-                    }
-                    chatHistory.appendChild(messageContainer);
-                    chatHistory.scrollTop = chatHistory.scrollHeight;
-
-                } else {
-                    appendMessage(messageText, 'user-message');
-                }
-
-                if(messageText){
-                    userParts.push({ text: messageText });
-                }
-
-                conversationHistory.push({ role: "user", parts: userParts });
-                
-                userInput.value = '';
-                clearImageSelection();
-
-                const waitingMessage = appendMessage('ChatMN đang nghĩ...', 'ai-message');
-
-                fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: conversationHistory })
-                })
-                .then(response => {
-                    if (!response.ok) { throw new Error(`Lỗi mạng rùi: ${response.status}`); }
-                    return response.json();
-                })
-                .then(data => {
-                    chatHistory.removeChild(waitingMessage);
-                    
-                    if (data.candidates && data.candidates.length > 0) {
-                        const candidate = data.candidates[0];
-                        let aiResponse = "Hmm... mình không biết nói gì về cái này :P";
-                        if (candidate.content && candidate.content.parts) {
-                            aiResponse = candidate.content.parts[0].text;
-                        }
-
-                        if (candidate.finishReason === "MAX_TOKENS") {
-                            aiResponse += "\n\n*(Ui, mình nói hơi dài nên bị ngắt quãng... :<)*";
-                        } else if (candidate.finishReason === "SAFETY") {
-                            aiResponse = "Ối, cái này hơi nhạy cảm nên mình không nói được. Bạn hỏi câu khác được không? ^^";
-                        }
-                        
-                        appendMessage(aiResponse, 'ai-message');
-                        conversationHistory.push({ role: "model", parts: [{ text: aiResponse }] });
-                    } else {
-                         appendMessage('Huhu, hình như có lỗi gì đó từ phía API rùi á. :(', 'ai-message system-notification');
-                    }
-                })
-                .catch(error => {
-                    console.error('Lỗi:', error);
-                    chatHistory.removeChild(waitingMessage);
-                    appendMessage(`Gặp lỗi rùi nè: ${error.message}. Bạn check lại F12 xem sao nha!`, 'ai-message system-notification');
-                });
-            }
-            
-            function appendMessage(text, className) {
-    const messageElement = document.createElement('div');
-    messageElement.classList.add('message', className);
-    chatHistory.appendChild(messageElement);
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-
-    if (className.includes('ai-message')) {
-        let formattedText = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>').replace(/\n/g, '<br>'); 
-        const speedPerChar = 1000 / 700; // 15 chữ/giây → 66.66ms/char
-        typeText(messageElement, formattedText, speedPerChar);
-    } else {
-        messageElement.innerHTML = text.replace(/\n/g, '<br>');
+    // Helpers
+    function getBase64FromDataUrl(dataUrl) {
+        return dataUrl.includes(',') ? dataUrl.split(',')[1] : dataUrl;
+    }
+    function dataUrlFromParts(mime, base64) {
+        return `data:${mime};base64,${base64}`;
+    }
+    function humanFileSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B','KB','MB','GB','TB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    function ensurePlaceholderHidden() {
+        if (chatPlaceholder) chatPlaceholder.style.display = 'none';
+    }
+    function escapeHtml(unsafe) {
+        return (''+unsafe).replace(/[&<>\"']/g, function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":"&#039;"}[m];});
     }
 
-    return messageElement;
-}
+    // --- NÂNG CẤP: HÀM MỚI ĐỂ "DỊCH" MARKDOWN SANG HTML ---
+    function formatMarkdown(text) {
+        // 1. Chuyển đổi an toàn các ký tự HTML đặc biệt
+        let safeText = escapeHtml(text);
+
+        // 2. Chuyển đổi markdown thành thẻ HTML
+        // Lưu ý: Thay thế ** (đậm) trước * (nghiêng) để tránh xung đột
+        return safeText
+            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')  // Bold: **text** -> <strong>text</strong>
+            .replace(/\*(.*?)\*/g, '<em>$1</em>')          // Italic: *text* -> <em>text</em>
+            .replace(/\n/g, '<br>');                           // Newline -> <br>
+    }
+
+    // Typing effect
+    function typeText(element, text, speed, callback) {
+        let index = 0;
+        function type() {
+            if (index < text.length) {
+                // `text` ở đây đã là HTML đã được định dạng, chỉ cần hiển thị
+                element.innerHTML = text.substring(0, index + 1);
+                index++;
+                setTimeout(type, speed);
+            } else if (callback) callback();
+        }
+        type();
+    }
+
+    // Append messages
+    function appendMessage(text, className, useTypingEffect = true, existingElement = null) {
+        const messageElement = existingElement || document.createElement('div');
+        if (!existingElement) {
+            messageElement.className = 'message ' + className;
+            chatHistory.appendChild(messageElement);
+        }
+        
+        // --- NÂNG CẤP: SỬ DỤNG HÀM formatMarkdown TRƯỚC KHI HIỂN THỊ ---
+        const formattedText = formatMarkdown(text);
+        
+        if (className.includes('ai-message') && useTypingEffect) {
+            const speedPerChar = 1; // ms per char
+            messageElement.innerHTML = '';
+            // Truyền HTML đã được định dạng vào hàm typeText
+            typeText(messageElement, formattedText, speedPerChar, () => chatHistory.scrollTop = chatHistory.scrollHeight);
+        } else {
+            // Hiển thị trực tiếp HTML đã được định dạng
+            messageElement.innerHTML = formattedText;
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+        }
+        return messageElement;
+    }
+
+    function appendUserMessageWithFile(text, fileData) {
+        const messageContainer = document.createElement('div');
+        messageContainer.className = 'message user-message';
+
+        if (fileData.mimeType.startsWith('image/')) {
+            const img = document.createElement('img');
+            img.src = dataUrlFromParts(fileData.mimeType, fileData.base64);
+            img.style.maxHeight = '200px'; img.style.borderRadius = '12px';
+            img.style.display = 'block'; img.style.marginBottom = text ? '10px' : '0';
+            messageContainer.appendChild(img);
+        } else {
+            const box = document.createElement('div');
+            box.className = 'file-box';
+            box.innerHTML = `<strong>Đã gửi file:</strong> ${escapeHtml(fileData.name)}<br><small>${escapeHtml(fileData.mimeType)} • ${humanFileSize(fileData.size)}</small>`;
+            messageContainer.appendChild(box);
+        }
+
+        if (text) {
+            const textElement = document.createElement('div');
+            textElement.style.marginTop = '8px';
+            textElement.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+            messageContainer.appendChild(textElement);
+        }
+
+        const dl = document.createElement('div');
+        dl.className = 'file-download';
+        const a = document.createElement('a');
+        a.className = 'download-link'; a.href = dataUrlFromParts(fileData.mimeType, fileData.base64);
+        a.download = fileData.name; a.textContent = 'Tải file xuống';
+        dl.appendChild(a);
+        messageContainer.appendChild(dl);
+
+        chatHistory.appendChild(messageContainer);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+
+    function appendSimpleUserMessage(text) {
+        const el = document.createElement('div');
+        el.className = 'message user-message';
+        el.innerHTML = escapeHtml(text).replace(/\n/g, '<br>');
+        chatHistory.appendChild(el);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    
+    // --- Toàn bộ các hàm xử lý logic khác được giữ nguyên ---
+    // (Dán lại toàn bộ code của các hàm này từ file trước của bạn)
+    function appendSystemNotification(text) {
+        const el = document.createElement('div');
+        el.className = 'message system-notification';
+        el.innerHTML = escapeHtml(text);
+        chatHistory.appendChild(el);
+        chatHistory.scrollTop = chatHistory.scrollHeight;
+    }
+    attachFileButton.addEventListener('click', () => fileInput.click());
+    fileInput.addEventListener('change', (event) => {
+        const file = event.target.files[0];
+        if (!file) return;
+        if (file.size > 15 * 1024 * 1024) {
+            alert('File quá lớn, chọn file < 15MB nhé.');
+            event.target.value = '';
+            return;
+        }
+        const reader = new FileReader();
+        reader.onloadend = () => {
+            const dataUrl = reader.result || '';
+            const base64 = getBase64FromDataUrl(dataUrl);
+            selectedFile = {
+                mimeType: file.type || 'application/octet-stream', name: file.name || 'file', base64, size: file.size
+            };
+            if (selectedFile.mimeType.startsWith('image/')) {
+                imagePreview.src = dataUrl; imagePreview.style.display = 'block'; fileInfo.textContent = '';
+            } else {
+                imagePreview.src = ''; imagePreview.style.display = 'none';
+                fileInfo.textContent = `File đã chọn: ${selectedFile.name} — ${humanFileSize(selectedFile.size)}`;
+            }
+            imagePreviewContainer.style.display = 'flex';
+        };
+        reader.readAsDataURL(file);
+    });
+    removeImageButton.addEventListener('click', clearFileSelection);
+    function clearFileSelection() {
+        fileInput.value = ''; selectedFile = null; imagePreview.src = '';
+        imagePreview.style.display = 'none'; fileInfo.textContent = '';
+        imagePreviewContainer.style.display = 'none';
+    }
+    sendButton.addEventListener('click', sendMessage);
+    userInput.addEventListener('keydown', (e) => {
+        //if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+    function sendMessage() {
+        const messageText = userInput.value.trim();
+        if (!messageText && !selectedFile) return;
+        if (!API_KEY || API_KEY.includes('YOUR_API_KEY')) {
+            alert('Thay API_KEY vào biến API_KEY trong file này trước khi gửi.');
+            return;
+        }
+        ensurePlaceholderHidden();
+        const userParts = [];
+        if (selectedFile) {
+            userParts.push({ inline_data: { mime_type: selectedFile.mimeType, data: selectedFile.base64 } });
+            appendUserMessageWithFile(messageText, selectedFile);
+        } else if (messageText) { appendSimpleUserMessage(messageText); }
+        if (messageText) userParts.push({ text: messageText });
+        conversationHistory.push({ role: 'user', parts: userParts });
+        userInput.value = '';
+        clearFileSelection();
+        const waitingMessage = appendMessage('', 'ai-message', false); // Gửi chuỗi rỗng
+        waitingMessage.innerHTML = 'ChatMN đang nghĩ...'; // Thêm chữ chờ
+        performApiCall(conversationHistory, waitingMessage);
+    }
+    function performApiCall(historyPayload, messageElementToUpdate) {
+        fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ contents: historyPayload })
+        }).then(async response => {
+            const text = await response.text();
+            let data;
+            try { data = JSON.parse(text); } catch(e) { data = text; }
+            if (!response.ok) { console.error('API lỗi chi tiết:', data); throw new Error(`API ${response.status}: ${JSON.stringify(data)}`); }
+            return data;
+        }).then(data => {
+            let aiResponse = 'Mình không biết phải trả lời sao...';
+            try {
+                if (data?.candidates && data.candidates.length) {
+                    const candidate = data.candidates[0];
+                    if (candidate?.content?.parts && candidate.content.parts.length) {
+                        const textPart = candidate.content.parts.find(p => typeof p.text === 'string');
+                        if (textPart) aiResponse = textPart.text;
+                    }
+                    if (candidate.finishReason === 'MAX_TOKENS') aiResponse += '\n\n*(Bị ngắt do giới hạn từ)*';
+                    if (candidate.finishReason === 'SAFETY') aiResponse = 'Cái này hơi nhạy cảm nên mình không thể trả lời.';
+                }
+            } catch (e) { console.error('Xử lý response error', e); }
+            messageElementToUpdate.innerHTML = '';
+            appendMessage(aiResponse, 'ai-message', true, messageElementToUpdate);
+            conversationHistory.push({ role: 'model', parts: [{ text: aiResponse }] });
+        }).catch(error => {
+            console.error('Lỗi khi gọi API:', error);
+            messageElementToUpdate.className = 'message ai-message system-notification';
+            messageElementToUpdate.textContent = `Lỗi: ${error.message}`;
+            chatHistory.scrollTop = chatHistory.scrollHeight;
         });
-    </script>
+    }
+    saveChatButton.addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(conversationHistory, null, 2)], { type: 'application/json' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = `chatmn_${new Date().toISOString().replace(/[:.]/g,'-')}.json`;
+        a.click();
+        URL.revokeObjectURL(a.href);
+    });
+    loadChatButton.addEventListener('click', () => loadChatInput.click());
+    loadChatInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const parsed = JSON.parse(reader.result);
+                if (!Array.isArray(parsed)) throw new Error('File không đúng định dạng (cần một mảng JSON).');
+                conversationHistory = parsed;
+                rebuildChatFromHistory();
+                appendSystemNotification('Đã tải chat từ file.');
+            } catch (err) { alert('Không đọc được file: ' + err.message); }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+    function rebuildChatFromHistory() {
+        chatHistory.innerHTML = '';
+        const nonSystem = conversationHistory.filter(m => m.role !== 'system' && m.role !== 'model');
+        if (!nonSystem.length) {
+            chatHistory.appendChild(chatPlaceholder);
+            chatPlaceholder.style.display = 'flex';
+            return;
+        }
+        conversationHistory.forEach(item => {
+            if (item.role === 'system') return;
+            const parts = Array.isArray(item.parts) ? item.parts : [];
+            if (item.role === 'user') {
+                let textAccum = '';
+                parts.forEach(p => {
+                    if (p.inline_data) {
+                        const inline = p.inline_data;
+                        const fileData = {
+                            mimeType: inline.mime_type || 'application/octet-stream',
+                            name: inline.name || 'file',
+                            base64: inline.data || '',
+                            size: inline.size || 0
+                        };
+                        appendUserMessageWithFile(textAccum || '', fileData);
+                        textAccum = '';
+                    } else if (p.text) { textAccum += (textAccum ? '\n' : '') + p.text; }
+                });
+                if (textAccum) appendSimpleUserMessage(textAccum);
+            } else if (item.role === 'model') {
+                const modelText = parts.map(p => p.text || '').join('\n').trim();
+                if (modelText) appendMessage(modelText, 'ai-message', false);
+            }
+        });
+    }
+});
+</script>
 </body>
 </html>
-
